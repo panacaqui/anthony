@@ -4,7 +4,7 @@ const { URL } = require('url');
 const routes = require('../routes');
 
 module.exports = http.createServer((request, response) => {
-  const url = new URL(request.url);
+  const url = new URL(`https://dev${request.url}`);
 
   const route = routes.find((routeObj) => (
     routeObj.endpoint === url.pathname && routeObj.method === request.method
