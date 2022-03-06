@@ -18,11 +18,9 @@ module.exports = {
     const user = users.find((user) => user.id === Number(id));
 
     if (!user) {
-      response.writeHead(400, { 'Content-Type': 'application/json' });
-      response.end(JSON.stringify({ error: 'User not find' }));
+      response.send(400, { error: 'User not find' }, 'json');
     } else {
-      response.writeHead(200, { 'Content-Type': 'application/json' });
-      response.end(JSON.stringify(user));
+      response.send(200, user, 'json');
     }
   }
 };

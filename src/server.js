@@ -3,7 +3,7 @@ const { URL } = require('url');
 
 const routes = require('../routes');
 
-module.exports = http.createServer((request, response) => {
+function getRoute(request) {
   const url = new URL(`https://dev${request.url}`);
 
   let pathName = url.pathname;
@@ -19,12 +19,22 @@ module.exports = http.createServer((request, response) => {
     routeObj.endpoint === pathName && routeObj.method === request.method
   ));
 
+  return { route, params, query: Object.fromEntries(url.searchParams) };
+}
+
+module.exports = http.createServer((request, response) => {
+  const { route, params, query } = getRoute(request);
+
+  response.send = (statusCode, body, type) => {
+    response.writeHead(statusCode, { 'Content-Type': type === 'json' ? 'application/json' : 'text/html' });
+    response.end(type === 'json' ? JSON.stringify(body) : body);
+  };
+
   if (route) {
-    request.query = Object.fromEntries(url.searchParams);
+    request.query = query;
     request.params = params;
     route.hendle(request, response);
   } else {
-    response.writeHead(404, { 'Cotent-Type': 'text/html' });
-    response.end(`<h1>Not found ${request.method} ${url.pathname}</h1>`);
+    response.send(404, `<h1>Not found</h1>`, 'html');
   }
 });
