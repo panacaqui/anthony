@@ -1,3 +1,4 @@
+const port = 8082;
 const server = require('./src/server');
 
-server.listen('8083', () => { console.log('Server sucefully started at 8083'); });
+server.listen(port, () => { console.log(`Server sucefully started at ${port}`); });
