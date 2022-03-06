@@ -1,7 +1,8 @@
-const http = require('http');
-const { URL } = require('url');
+const http = require("http");
+const { URL } = require("url");
 
-const routes = require('../routes');
+const routes = require("../routes");
+const { bodyParse } = require("../helpers/functions");
 
 function getRoute(request) {
   const url = new URL(`https://dev${request.url}`);
@@ -9,7 +10,7 @@ function getRoute(request) {
   let pathName = url.pathname;
   let params = {};
 
-  const splitedPathName = pathName.split('/').filter(Boolean);
+  const splitedPathName = pathName.split("/").filter(Boolean);
   if (splitedPathName.length > 1) {
     pathName = `/${splitedPathName[0]}/:id`;
     params = { id: splitedPathName[1] };
@@ -26,15 +27,25 @@ module.exports = http.createServer((request, response) => {
   const { route, params, query } = getRoute(request);
 
   response.send = (statusCode, body, type) => {
-    response.writeHead(statusCode, { 'Content-Type': type === 'json' ? 'application/json' : 'text/html' });
-    response.end(type === 'json' ? JSON.stringify(body) : body);
+    if (type === "json") {
+      response.writeHead(statusCode, { "Content-Type": "application/json" });
+      response.end(JSON.stringify(body));
+    } else {
+      response.writeHead(statusCode, { "Content-Type": "text/html" });
+      response.end(body);
+    }
   };
 
   if (route) {
     request.query = query;
     request.params = params;
-    route.hendle(request, response);
+
+    if (['POST', 'PUT'].includes(request.method)) {
+      bodyParse(request, () => route.hendle(request, response));
+    } else {
+      route.hendle(request, response);
+    }
   } else {
-    response.send(404, `<h1>Not found</h1>`, 'html');
+    response.send(404, `<h1>Not found</h1>`, "html");
   }
 });
